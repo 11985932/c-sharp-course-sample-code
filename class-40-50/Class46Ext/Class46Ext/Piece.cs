@@ -11,7 +11,7 @@ namespace Class46Ext
 
     public abstract class Piece : PictureBox
     {
-        private static readonly int IMAGE_WIDTH = 50;
+        internal static readonly int IMAGE_WIDTH = 50;
         public Piece(int x, int y)
         {
             InitializeComponent();
@@ -25,7 +25,7 @@ namespace Class46Ext
         }
 
         //因為Board類別要存取，而該類並不是Piece的衍生類別，故不能用protected，只能用internal以上的存取層級
-        internal abstract PieceType GetPieceTyep();
+        internal abstract PieceType GetPieceType();
         
         private void InitializeComponent()
         {

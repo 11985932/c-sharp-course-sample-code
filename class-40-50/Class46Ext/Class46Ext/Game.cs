@@ -14,30 +14,35 @@ namespace Class46Ext
         //現在玩家是誰，是Game類別在管的，別的類別只能唯讀，故做get存取器回報
         internal static PieceType CurrentPlayer { get { return currentPlayer; } }
         //二維陣列，記錄棋盤上要標識的棋子及其位置
-        private static Piece[,] piecesMarkYellow = new Piece[Board.NODE_COUNT_ONESIDE, Board.NODE_COUNT_ONESIDE];
-        internal static Piece[,] PiecesMarkYellow { get { return piecesMarkYellow; } }
-
+        private static Piece[,] piecesMarkYellowNode = new Piece[Board.NODE_COUNT_ONESIDE, Board.NODE_COUNT_ONESIDE];
+        internal static Piece[,] PiecesMarkYellowNode { get { return piecesMarkYellowNode; } }
+        private static Piece[,] piecesMarkRedNode = new Piece[Board.NODE_COUNT_ONESIDE, Board.NODE_COUNT_ONESIDE];
+        internal static Piece[,] PiecesMarkRedNode { get { return piecesMarkRedNode; } }
 
         internal static int markAlmostWinPiecesYellow()
         {
-            
+
             Form form1 = Application.OpenForms[0];
             Piece p = null; int i = 0;
-            foreach (Piece piecesMarkItem in piecesMarkYellow)
+            foreach (Piece piecesMarkItem in piecesMarkYellowNode)
             {
-                if (piecesMarkItem != null)                {
-                    
+                if (piecesMarkItem != null)
+                {
+
                     p = new YellowPiece(piecesMarkItem.Location.X, piecesMarkItem.Location.Y);
-                    p.BringToFront();
+                    //p.BringToFront();//不能先執行此行，因為加入表單控制項Controls.Add是以複製的方式傳入Controls集合
                     form1.Controls.Add(p);
+                    form1.Controls[form1.Controls.Count - 1].BringToFront();
                     i++;
                 }
             }
             return i;
         }
 
-        static int markPieceCtr;
-        internal static int MarkPieceCtr { get {return markPieceCtr;} }
+        //記下要標識的棋子數
+        static int markPieceCtr, markPieceCtrOpponent;
+        internal static int MarkPieceCtr { get { return markPieceCtr; } }
+        internal static int MarkPieceCtrOpponent { get { return markPieceCtrOpponent; } }
         //要給form1呼叫的
         internal static Piece PlaceAPiece(int x, int y)
         {
@@ -49,8 +54,15 @@ namespace Class46Ext
                 //沒有贏家，則檢查有沒有快要贏的：
                 checkAlmostWinner(Board.LastPlaceNode);
                 if (almostWinner != PieceType.NONE)
-                { 
-                    markPieceCtr = markAlmostWinPiecesYellow();
+                {
+                    if (almostWinner == currentPlayer)
+                    {
+                        markPieceCtr = markAlmostWinPiecesYellow();
+                    }
+                    else
+                    {
+                        markPieceCtrOpponent = markAlmostWinPiecesYellow();
+                    }
                 }
                 //換對手下棋
                 if (currentPlayer == PieceType.BLACK)
@@ -86,7 +98,7 @@ namespace Class46Ext
         internal static void Reset_almostWinner()
         {
             almostWinner = PieceType.NONE;
-            Array.Clear(piecesMarkYellow, 0, piecesMarkYellow.Length);
+            Array.Clear(piecesMarkYellowNode, 0, piecesMarkYellowNode.Length);
         }
 
         //重啟遊戲
@@ -98,7 +110,7 @@ namespace Class46Ext
             currentPlayer = PieceType.BLACK;//均是黑子先下
             //清除棋盤上棋子的分布記錄
             Board.PiecesClear();
-            Array.Clear(piecesMarkYellow, 0, piecesMarkYellow.Length);
+            Array.Clear(piecesMarkYellowNode, 0, piecesMarkYellowNode.Length);
         }
 
         private static void checkWinner(Point lastPlaceNode)
@@ -161,11 +173,14 @@ namespace Class46Ext
                                 //    winner = currentPlayer;
                                 //    return;//贏家確定了，就不用再找了
                                 //}
-
+                                piecesMarkRedNode[targetX, targetY] = new RedPiece(
+                                Board.convertToFormPosition(new Point(targetX, targetY)));
                             }
                         }
                         //要五子連棋,找到同色子就加1
                         count++;
+                        piecesMarkRedNode[targetX, targetY] = new RedPiece(
+                            Board.convertToFormPosition(new Point(targetX, targetY)));
                     }
                     nextdir:
                     if (count == 5)
@@ -175,6 +190,7 @@ namespace Class46Ext
                     }
                     else
                         count = 1;
+                    Array.Clear(piecesMarkRedNode, 0, piecesMarkRedNode.Length);
                 }
             }
 
@@ -186,6 +202,7 @@ namespace Class46Ext
             int count = 1, countReverse = 0;//反方向檢查是不包括自己，故初始值為0
             int targetX = 0, targetY = 0;//檢查目標的節點
             int pieceNoneCtr = 0;//記錄空子有幾個，因為快要贏，空位只能留一個
+            Point pointYellowPos = new Point(-1, -1);
             for (int xDir = -1; xDir <= 1; xDir++)
             {
                 for (int yDir = -1; yDir <= 1; yDir++)
@@ -222,8 +239,11 @@ namespace Class46Ext
                                 else if (Board.GetPieceType(targetX, targetY) == PieceType.NONE)
                                     pieceNoneCtr++;
                                 else
-                                    piecesMarkYellow[targetX, targetY] =
-                                        new YellowPiece(Board.convertToFormPosition(new Point(targetX, targetY)));
+                                    pointYellowPos = Board.convertToFormPosition(new Point(targetX, targetY));
+                                piecesMarkYellowNode[targetX, targetY] =
+                                    new YellowPiece(new Point(
+                                        pointYellowPos.X + Piece.IMAGE_WIDTH / 2,
+                                        pointYellowPos.Y + Piece.IMAGE_WIDTH / 2));
 
                                 if (countReverse + count == 5)
                                 {
@@ -233,7 +253,7 @@ namespace Class46Ext
                                         return;//快要贏的確定了，就不用再找了
 
                                     }
-                                    Array.Clear(piecesMarkYellow, 0, piecesMarkYellow.Length);
+                                    Array.Clear(piecesMarkYellowNode, 0, piecesMarkYellowNode.Length);
                                     break;
                                 }
 
@@ -245,15 +265,18 @@ namespace Class46Ext
                         }
                         //要五子連棋,找到同色子就加1
                         count++;
-                        piecesMarkYellow[targetX, targetY] = 
-                            new YellowPiece(Board.convertToFormPosition(new Point( targetX, targetY)));
+                        pointYellowPos = Board.convertToFormPosition(new Point(targetX, targetY));
+                        piecesMarkYellowNode[targetX, targetY] =
+                            new YellowPiece(new Point(
+                                pointYellowPos.X + Piece.IMAGE_WIDTH / 2,
+                                pointYellowPos.Y + Piece.IMAGE_WIDTH / 2));
                     }
                     nextdir:
                     if (count == 5)
                     {
                         if (pieceNoneCtr == 1)
                         {
-                            almostWinner = currentPlayer;                            
+                            almostWinner = currentPlayer;
                             return;//快要贏的確定了，就不用再找了
 
                         }
@@ -261,7 +284,7 @@ namespace Class46Ext
                     }
                     count = 1;
                     pieceNoneCtr = 0;
-                    Array.Clear(piecesMarkYellow, 0, piecesMarkYellow.Length);
+                    Array.Clear(piecesMarkYellowNode, 0, piecesMarkYellowNode.Length);
                 }
             }
 
@@ -275,9 +298,9 @@ namespace Class46Ext
                 //return;
             }
             //找到就會中途離開函式，故到此應是沒有
-            if (almostWinner != PieceType.NONE)
-                almostWinner = PieceType.NONE;
+            //if (almostWinner != PieceType.NONE)
+            //    almostWinner = PieceType.NONE;
         }
-        
+
     }
 }

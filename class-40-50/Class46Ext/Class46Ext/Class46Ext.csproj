@@ -63,6 +63,9 @@
     <Compile Include="PieceType.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RedPiece.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="WhitePiece.cs">
       <SubType>Component</SubType>
     </Compile>

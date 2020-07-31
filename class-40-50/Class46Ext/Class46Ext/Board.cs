@@ -199,7 +199,7 @@ namespace Class46Ext
             if (piece == null)
                 return PieceType.NONE;
             else
-                return piece.GetPieceTyep();
+                return piece.GetPieceType();
         }
     }
 

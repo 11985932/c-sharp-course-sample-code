@@ -17,7 +17,7 @@ namespace Class46Ext
         {
             Image = Properties.Resources.black;
         }
-        internal override PieceType GetPieceTyep()
+        internal override PieceType GetPieceType()
         {
             return PieceType.BLACK;
         }
