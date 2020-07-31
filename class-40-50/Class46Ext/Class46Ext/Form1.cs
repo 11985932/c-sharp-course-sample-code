@@ -85,23 +85,8 @@ namespace Class46Ext
                 Controls.Add(piece);
                 pieceCount++;
 
-                ////自動下棋功能還要再改良！！！
-                ////●●●以下自動下棋，不要自動下棋把此行至
-                ////「MessageBox.Show("棋盤已滿！");」此行拿掉即可
-                //Piece pieceAuto = Game.autoPlay();
-                //this.Refresh();
-                ////要做個延遲
-                //Thread.Sleep(200);
-                ////自動下棋
-                //if (pieceAuto != null)
-                //{
-                //    Controls.Add(pieceAuto);
-                //    pieceCount++;
-                //}
-                //else
-                //    MessageBox.Show("棋盤已滿！");
-                ////●●●以上自動下棋，不要自動下棋把此行以上拿掉即可
-
+                ////●●以下自動下棋，不要自動下棋把此拿掉即可
+                //autoPlay();
 
                 //加入頂端提示的棋子
                 Controls.Add(Board.PlaceCurrPlayerPiece());
@@ -139,6 +124,22 @@ namespace Class46Ext
             }
         }
 
+        private void autoPlay()
+        {
+            //自動下棋功能還要再改良！！！           
+            Piece pieceAuto = Game.autoPlay();
+            this.Refresh();
+            //要做個延遲
+            Thread.Sleep(200);
+            //自動下棋
+            if (pieceAuto != null)
+            {
+                Controls.Add(pieceAuto);
+                pieceCount++;
+            }
+            else
+                MessageBox.Show("棋盤已滿！");
+        }
 
         void clearMarkedPieces()
         {
